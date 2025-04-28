@@ -1,9 +1,8 @@
-# n8n-nodes-requesty
+# n8n-requesty
 
 An n8n community node for Requesty AI integration, allowing you to interact with various AI models through a unified API.
 
-[![Follow on X](https://img.shields.io/twitter/follow/ThibaultJaigu?style=social&logo=twitter)]
-(https://x.com/ThibaultJaigu)
+[![Follow on X](https://img.shields.io/twitter/follow/ThibaultJaigu?style=social&logo=twitter)](https://x.com/ThibaultJaigu)
 
 ## Features
 
