@@ -1,6 +1,6 @@
 {
-  "name": "n8n-nodes-requesty",
-  "version": "0.3.37",
+  "name": "n8n-requesty",
+  "version": "0.0.1",
   "description": "n8n node for Requesty API integration",
   "keywords": [
     "n8n-community-node-package",
