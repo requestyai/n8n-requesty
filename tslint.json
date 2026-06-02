@@ -1,6 +1,0 @@
-{
-    "extends": "n8n/tslint.json",
-    "rules": {
-        "no-console": false
-    }
-}
