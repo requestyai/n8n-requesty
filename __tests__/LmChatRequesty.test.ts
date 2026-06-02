@@ -171,5 +171,29 @@ describe('LmChatRequesty', () => {
 				node.supplyData.call(ctx as any, 0),
 			).rejects.toThrow(/not valid JSON/);
 		});
+
+		it('throws a helpful error when JSON Schema is selected but empty', async () => {
+			const node = new LmChatRequesty();
+			const ctx = makeContext('openai-responses/gpt-5.4', {
+				responseFormat: 'json_schema',
+				jsonSchema: '',
+			});
+			await expect(
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				node.supplyData.call(ctx as any, 0),
+			).rejects.toThrow(/no JSON Schema was provided/);
+		});
+
+		it('throws a helpful error when JSON Schema is selected but undefined', async () => {
+			const node = new LmChatRequesty();
+			// responseFormat set, but jsonSchema key entirely absent from options
+			const ctx = makeContext('openai-responses/gpt-5.4', {
+				responseFormat: 'json_schema',
+			});
+			await expect(
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				node.supplyData.call(ctx as any, 0),
+			).rejects.toThrow(/no JSON Schema was provided/);
+		});
 	});
 });
