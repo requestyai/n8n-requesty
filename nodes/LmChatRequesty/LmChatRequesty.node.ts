@@ -3,6 +3,7 @@ import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
 import { supplyModel, type ProviderTool } from '@n8n/ai-node-sdk';
 
 type ModelOptions = {
+	baseUrl?: string;
 	temperature?: number;
 	maxTokens?: number;
 	topP?: number;
@@ -52,7 +53,7 @@ export class LmChatRequesty implements INodeType {
 		],
 		requestDefaults: {
 			ignoreHttpStatusErrors: true,
-			baseURL: 'https://router.requesty.ai/v1',
+			baseURL: '={{ $parameter.options?.baseUrl || "https://router.requesty.ai/v1" }}',
 		},
 		properties: [
 			{
@@ -94,6 +95,15 @@ export class LmChatRequesty implements INodeType {
 				type: 'collection',
 				default: {},
 				options: [
+					{
+						displayName: 'Base URL',
+						name: 'baseUrl',
+						type: 'string',
+						default: '',
+						placeholder: 'https://router.requesty.ai/v1',
+						description:
+							'Override the Requesty gateway URL. Use this to point the node at a self-hosted Requesty deployment. Leave empty to use the default gateway.',
+					},
 					{
 						displayName: 'Enable Web Search',
 						name: 'enableWebSearch',
@@ -213,6 +223,8 @@ export class LmChatRequesty implements INodeType {
 		const model = this.getNodeParameter('model', itemIndex) as string;
 		const options = this.getNodeParameter('options', itemIndex, {}) as ModelOptions;
 
+		const baseUrl = options.baseUrl || 'https://router.requesty.ai/v1';
+
 		// Build the Responses API `text.format` for structured output.
 		// On the Responses API, structured output is expressed via `text.format`
 		// (not `response_format` like the Chat Completions API).
@@ -261,7 +273,7 @@ export class LmChatRequesty implements INodeType {
 
 		return supplyModel(this, {
 			type: 'openai',
-			baseUrl: 'https://router.requesty.ai/v1',
+			baseUrl,
 			apiKey: credentials.apiKey as string,
 			model,
 			temperature: options.temperature,
