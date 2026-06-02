@@ -13,7 +13,7 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 In your n8n instance, go to **Settings > Community Nodes** and install:
 
 ```
-@requestyai/n8n-nodes-requesty
+@requesty/n8n-nodes-requesty
 ```
 
 ## Credentials
