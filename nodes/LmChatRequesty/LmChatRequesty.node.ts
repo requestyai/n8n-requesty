@@ -250,16 +250,31 @@ export class LmChatRequesty implements INodeType {
 		if (options.responseFormat === 'json_object') {
 			additionalParams = { text: { format: { type: 'json_object' } } };
 		} else if (options.responseFormat === 'json_schema') {
+			const rawSchema = options.jsonSchema;
+			if (rawSchema === undefined || rawSchema === null || rawSchema === '') {
+				throw new NodeOperationError(
+					this.getNode(),
+					'Response Format is set to "JSON Schema" but no JSON Schema was provided. Add a schema in the JSON Schema option.',
+				);
+			}
+
 			let parsedSchema: Record<string, unknown>;
 			try {
 				parsedSchema =
-					typeof options.jsonSchema === 'string'
-						? (JSON.parse(options.jsonSchema) as Record<string, unknown>)
-						: (options.jsonSchema as unknown as Record<string, unknown>);
+					typeof rawSchema === 'string'
+						? (JSON.parse(rawSchema) as Record<string, unknown>)
+						: (rawSchema as unknown as Record<string, unknown>);
 			} catch {
 				throw new NodeOperationError(
 					this.getNode(),
 					'The JSON Schema provided in the Response Format options is not valid JSON',
+				);
+			}
+
+			if (typeof parsedSchema !== 'object' || parsedSchema === null) {
+				throw new NodeOperationError(
+					this.getNode(),
+					'The JSON Schema provided in the Response Format options must be a JSON object',
 				);
 			}
 
