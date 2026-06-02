@@ -11,6 +11,7 @@ type ModelOptions = {
 	presencePenalty?: number;
 	responseFormat?: 'text' | 'json_object' | 'json_schema';
 	jsonSchema?: string;
+	reasoningEffort?: 'low' | 'medium' | 'high';
 	enableWebSearch?: boolean;
 	webSearchContextSize?: 'low' | 'medium' | 'high';
 	webSearchCountry?: string;
@@ -151,6 +152,27 @@ export class LmChatRequesty implements INodeType {
 						type: 'number',
 					},
 					{
+						displayName: 'Reasoning Effort',
+						name: 'reasoningEffort',
+						type: 'options',
+						default: 'medium',
+						description:
+							'Controls how much reasoning a reasoning-capable model does before answering. Has no effect on models that do not support reasoning.',
+						options: [
+							{
+								name: 'Low',
+								value: 'low',
+								description: 'Favor speed and lower token usage',
+							},
+							{ name: 'Medium', value: 'medium', description: 'Balanced reasoning' },
+							{
+								name: 'High',
+								value: 'high',
+								description: 'Favor more complete reasoning at higher cost and latency',
+							},
+						],
+					},
+					{
 						displayName: 'Response Format',
 						name: 'responseFormat',
 						type: 'options',
@@ -284,6 +306,7 @@ export class LmChatRequesty implements INodeType {
 			// The Requesty node always uses the Responses API, which unlocks
 			// structured output via text.format and native built-in tools.
 			useResponsesApi: true,
+			reasoning: options.reasoningEffort ? { effort: options.reasoningEffort } : undefined,
 			additionalParams,
 			providerTools: providerTools.length ? providerTools : undefined,
 		});
