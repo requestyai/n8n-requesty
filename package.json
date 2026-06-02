@@ -1,7 +1,7 @@
 {
   "name": "@requestyai/n8n-nodes-requesty",
   "version": "1.0.0",
-  "description": "n8n community node for Requesty AI chat model integration",
+  "description": "n8n community node for Requesty: access 300+ AI models through one unified gateway with structured output, web search and reasoning.",
   "license": "MIT",
   "homepage": "https://requesty.ai",
   "keywords": [
