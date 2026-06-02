@@ -1,6 +1,6 @@
 import type { INodeType, INodeTypeDescription, ISupplyDataFunctions } from 'n8n-workflow';
-import { NodeConnectionTypes } from 'n8n-workflow';
-import { supplyModel } from '@n8n/ai-node-sdk';
+import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
+import { supplyModel, type ProviderTool } from '@n8n/ai-node-sdk';
 
 type ModelOptions = {
 	temperature?: number;
@@ -8,6 +8,12 @@ type ModelOptions = {
 	topP?: number;
 	frequencyPenalty?: number;
 	presencePenalty?: number;
+	responseFormat?: 'text' | 'json_object' | 'json_schema';
+	jsonSchema?: string;
+	useResponsesApi?: boolean;
+	enableWebSearch?: boolean;
+	webSearchContextSize?: 'low' | 'medium' | 'high';
+	webSearchCountry?: string;
 };
 
 export class LmChatRequesty implements INodeType {
@@ -90,6 +96,14 @@ export class LmChatRequesty implements INodeType {
 				default: {},
 				options: [
 					{
+						displayName: 'Enable Web Search',
+						name: 'enableWebSearch',
+						type: 'boolean',
+						default: false,
+						description:
+							'Whether to give the model a native web search tool so it can look up current information. Works best with the Responses API enabled.',
+					},
+					{
 						displayName: 'Frequency Penalty',
 						name: 'frequencyPenalty',
 						default: 0,
@@ -97,6 +111,17 @@ export class LmChatRequesty implements INodeType {
 						description:
 							'Penalizes new tokens based on their existing frequency in the text so far, decreasing the likelihood of repetition',
 						type: 'number',
+					},
+					{
+						displayName: 'JSON Schema',
+						name: 'jsonSchema',
+						type: 'json',
+						default:
+							'{\n  "name": "response",\n  "strict": true,\n  "schema": {\n    "type": "object",\n    "properties": {\n      "answer": { "type": "string" }\n    },\n    "required": ["answer"],\n    "additionalProperties": false\n  }\n}',
+						description:
+							'The JSON Schema the response must match. Used only when Response Format is "JSON Schema".',
+						typeOptions: { rows: 8 },
+						displayOptions: { show: { responseFormat: ['json_schema'] } },
 					},
 					{
 						displayName: 'Maximum Tokens',
@@ -117,6 +142,28 @@ export class LmChatRequesty implements INodeType {
 						type: 'number',
 					},
 					{
+						displayName: 'Response Format',
+						name: 'responseFormat',
+						type: 'options',
+						default: 'text',
+						description:
+							'Force the model to return a specific format. JSON Schema enforces a strict schema (real structured output) and requires the JSON Schema field below.',
+						options: [
+							{ name: 'Text', value: 'text', description: 'Plain text response (default)' },
+							{
+								name: 'JSON Object',
+								value: 'json_object',
+								description: 'Force a syntactically valid JSON object',
+							},
+							{
+								name: 'JSON Schema',
+								value: 'json_schema',
+								description:
+									'Force the response to strictly match the JSON Schema you provide (structured output)',
+							},
+						],
+					},
+					{
 						displayName: 'Sampling Temperature',
 						name: 'temperature',
 						default: 0.7,
@@ -134,6 +181,37 @@ export class LmChatRequesty implements INodeType {
 							'An alternative to sampling with temperature, called nucleus sampling. The model considers tokens with top_p probability mass.',
 						type: 'number',
 					},
+					{
+						displayName: 'Use Responses API',
+						name: 'useResponsesApi',
+						type: 'boolean',
+						default: false,
+						description:
+							'Whether to use the OpenAI Responses API instead of Chat Completions. Required for native web search and some advanced features.',
+					},
+					{
+						displayName: 'Web Search Context Size',
+						name: 'webSearchContextSize',
+						type: 'options',
+						default: 'medium',
+						description: 'How much context the web search tool retrieves per query',
+						options: [
+							{ name: 'Low', value: 'low' },
+							{ name: 'Medium', value: 'medium' },
+							{ name: 'High', value: 'high' },
+						],
+						displayOptions: { show: { enableWebSearch: [true] } },
+					},
+					{
+						displayName: 'Web Search Country',
+						name: 'webSearchCountry',
+						type: 'string',
+						default: '',
+						placeholder: 'e.g. US',
+						description:
+							'Optional ISO country code to bias web search results to an approximate location',
+						displayOptions: { show: { enableWebSearch: [true] } },
+					},
 				],
 			},
 		],
@@ -143,6 +221,42 @@ export class LmChatRequesty implements INodeType {
 		const credentials = await this.getCredentials('requestyApi');
 		const model = this.getNodeParameter('model', itemIndex) as string;
 		const options = this.getNodeParameter('options', itemIndex, {}) as ModelOptions;
+
+		// Build response_format for real structured output / JSON mode.
+		let additionalParams: Record<string, unknown> | undefined;
+		let supportsStrictToolCalling: boolean | undefined;
+		if (options.responseFormat === 'json_object') {
+			additionalParams = { response_format: { type: 'json_object' } };
+		} else if (options.responseFormat === 'json_schema') {
+			let jsonSchema: unknown;
+			try {
+				jsonSchema =
+					typeof options.jsonSchema === 'string'
+						? JSON.parse(options.jsonSchema)
+						: options.jsonSchema;
+			} catch {
+				throw new NodeOperationError(
+					this.getNode(),
+					'The JSON Schema provided in the Response Format options is not valid JSON',
+				);
+			}
+			additionalParams = {
+				response_format: { type: 'json_schema', json_schema: jsonSchema },
+			};
+			supportsStrictToolCalling = true;
+		}
+
+		// Build native web search provider tool.
+		const providerTools: ProviderTool[] = [];
+		if (options.enableWebSearch) {
+			const args: Record<string, unknown> = {
+				search_context_size: options.webSearchContextSize ?? 'medium',
+			};
+			if (options.webSearchCountry) {
+				args.user_location = { type: 'approximate', country: options.webSearchCountry };
+			}
+			providerTools.push({ type: 'provider', name: 'web_search', args });
+		}
 
 		return supplyModel(this, {
 			type: 'openai',
@@ -154,6 +268,10 @@ export class LmChatRequesty implements INodeType {
 			topP: options.topP,
 			frequencyPenalty: options.frequencyPenalty,
 			presencePenalty: options.presencePenalty,
+			useResponsesApi: options.useResponsesApi,
+			supportsStrictToolCalling,
+			additionalParams,
+			providerTools: providerTools.length ? providerTools : undefined,
 		});
 	}
 }
