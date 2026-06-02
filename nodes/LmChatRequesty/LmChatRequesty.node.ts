@@ -53,7 +53,8 @@ export class LmChatRequesty implements INodeType {
 		],
 		requestDefaults: {
 			ignoreHttpStatusErrors: true,
-			baseURL: '={{ $parameter.options?.baseUrl || "https://router.requesty.ai/v1" }}',
+			baseURL:
+				'={{ $parameter.options?.baseUrl || $credentials?.baseUrl || "https://router.requesty.ai/v1" }}',
 		},
 		properties: [
 			{
@@ -102,7 +103,7 @@ export class LmChatRequesty implements INodeType {
 						default: '',
 						placeholder: 'https://router.requesty.ai/v1',
 						description:
-							'Override the Requesty gateway URL. Use this to point the node at a self-hosted Requesty deployment. Leave empty to use the default gateway.',
+							'Override the gateway URL for this node. Leave empty to use the URL from the credential (which defaults to the public Requesty gateway).',
 					},
 					{
 						displayName: 'Enable Web Search',
@@ -239,7 +240,8 @@ export class LmChatRequesty implements INodeType {
 		const model = this.getNodeParameter('model', itemIndex) as string;
 		const options = this.getNodeParameter('options', itemIndex, {}) as ModelOptions;
 
-		const baseUrl = options.baseUrl || 'https://router.requesty.ai/v1';
+		const baseUrl =
+			options.baseUrl || (credentials.baseUrl as string) || 'https://router.requesty.ai/v1';
 
 		// Build the Responses API `text.format` for structured output.
 		// On the Responses API, structured output is expressed via `text.format`
