@@ -1,10 +1,10 @@
 # n8n-nodes-requesty
 
-An n8n community node for using [Requesty](https://requesty.ai)-hosted chat models in your n8n workflows.
+An n8n community node for using [Requesty](https://requesty.ai) hosted chat models in your n8n workflows.
 
-Requesty is a unified AI gateway providing access to 300+ models from OpenAI, Anthropic, Google, Meta, Mistral, and more — all through a single OpenAI-compatible API with intelligent routing, automatic fallbacks, and cost optimization.
+Requesty is a unified AI gateway providing access to 300+ models from OpenAI, Anthropic, Google, Meta, Mistral, and more, all through a single OpenAI compatible API with intelligent routing, automatic fallbacks, and cost optimization.
 
-[Installation](#installation) | [Credentials](#credentials) | [Usage](#usage) | [Resources](#resources)
+[Installation](#installation) · [Credentials](#credentials) · [Usage](#usage) · [Resources](#resources)
 
 ## Installation
 
@@ -24,34 +24,35 @@ In your n8n instance, go to **Settings > Community Nodes** and install:
 
 ## Usage
 
-The **Requesty Chat Model** node connects to any of the 300+ models available through Requesty's unified gateway. Use it anywhere n8n accepts a chat model — e.g., the AI Agent node, Basic LLM Chain, or any AI workflow.
+The **Requesty Chat Model** node connects to any of the 300+ models available through Requesty's unified gateway. Use it anywhere n8n accepts a chat model, such as the AI Agent node, Basic LLM Chain, or any AI workflow.
 
-Once your API key is saved, the **Model** dropdown auto-populates with all available models. You can also set it to a model ID directly using an expression (e.g., `anthropic/claude-sonnet-4-20250514`, `openai/gpt-4o`).
+Once your API key is saved, the **Model** dropdown auto populates with all available models. You can also set it to a model ID directly using an expression (for example `anthropic/claude-sonnet-4-20250514` or `openai/gpt-4o`).
 
 ### Configuration Options
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| Base URL | _(gateway)_ | Override the gateway URL for self-hosted Requesty deployments |
-| Enable Web Search | off | Give the model a native web search tool for up-to-date information |
-| Web Search Context Size | medium | How much context the web search retrieves per query |
-| Frequency Penalty | 0 | Penalizes token repetition (-2 to 2) |
-| Maximum Tokens | -1 | Max tokens to generate (-1 for no limit) |
-| Presence Penalty | 0 | Penalizes already-seen tokens (-2 to 2) |
-| Reasoning Effort | medium | Low/medium/high reasoning for reasoning-capable models |
 | Response Format | Text | Text, JSON Object, or JSON Schema (strict structured output) |
-| Sampling Temperature | 0.7 | Controls randomness (0 = deterministic, 2 = very random) |
+| JSON Schema | (example) | The schema the response must match when Response Format is JSON Schema |
+| Reasoning Effort | Default | Reasoning level (low, medium, high) for reasoning capable models |
+| Base URL | (gateway) | Override the gateway URL for self hosted Requesty deployments |
+| Enable Web Search | off | Give the model a native web search tool for up to date information |
+| Web Search Context Size | medium | How much context the web search retrieves per query |
+| Sampling Temperature | 0.7 | Controls randomness (0 is deterministic, 2 is very random) |
+| Maximum Tokens | unlimited | Maximum number of tokens to generate |
 | Top P | 1 | Nucleus sampling probability mass |
+| Frequency Penalty | 0 | Penalizes token repetition |
+| Presence Penalty | 0 | Penalizes already seen tokens |
 
 ### Key Features
 
 - **300+ Models**: Access models from OpenAI, Anthropic, Google, Meta, Mistral, Cohere, and more
 - **Responses API**: Built on the Responses API, unlocking richer capabilities than plain chat completions
-- **Structured Output**: Enforce a strict JSON Schema server-side (real structured output, not prompt-engineered)
+- **Structured Output**: Enforce a strict JSON Schema server side (real structured output, not prompt engineered)
 - **Native Web Search**: Let the model search the web for current information
-- **Reasoning Control**: Tune reasoning effort for reasoning-capable models
+- **Reasoning Control**: Tune reasoning effort for reasoning capable models
 - **Intelligent Routing**: Automatic fallbacks and load balancing across providers
-- **Self-Hosted Friendly**: Point the node at your own Requesty deployment via the Base URL option
+- **Self Hosted Friendly**: Point the node at your own Requesty deployment via the Base URL option
 
 ## Resources
 
@@ -62,28 +63,23 @@ Once your API key is saved, the **Model** dropdown auto-populates with all avail
 ## Development
 
 ```bash
-# Install dependencies
-npm install
-
-# Build the node
-npm run build
-
-# Run in development mode (starts n8n with hot reload)
-npm run dev
-
-# Lint
-npm run lint
+npm install          # install dependencies
+npm run build        # build the node
+npm run dev          # run n8n locally with the node and hot reload
+npm run lint         # lint
+npm test             # run unit tests
 ```
 
 ## Publishing
 
-This package uses GitHub Actions with npm provenance for publishing. To release:
+Releases are published to npm automatically by GitHub Actions with npm provenance, using OIDC trusted publishing (no token required).
 
-```bash
-npm run release
-```
+To release a new version:
 
-This will lint, build, prompt for a version bump, commit, tag, and push — triggering the publish workflow.
+1. Bump the version in `package.json`
+2. Create a GitHub Release for the new version
+
+The publish workflow then lints, builds, tests, and publishes the package.
 
 ## License
 
