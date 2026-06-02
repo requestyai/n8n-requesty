@@ -1,0 +1,110 @@
+{
+  "name": "Requesty — Multi-Model Chain (GPT-5.4 → Gemini 3.5 Flash → Claude Opus 4.7)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "aaaaaaaa-0001-0001-0001-000000000001",
+      "name": "When clicking Test workflow",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-200, 300]
+    },
+
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Write a short, punchy product tagline for a developer tool that routes LLM requests across many model providers. Reply with just the tagline, nothing else.",
+        "options": {
+          "systemMessage": "You are a creative copywriter. Be concise and original."
+        }
+      },
+      "id": "bbbbbbbb-0002-0002-0002-000000000002",
+      "name": "1) Draft (GPT-5.4)",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [120, 200]
+    },
+    {
+      "parameters": { "model": "openai-responses/gpt-5.4", "options": {} },
+      "id": "cccccccc-0003-0003-0003-000000000003",
+      "name": "Requesty (GPT-5.4)",
+      "type": "@requestyai/n8n-nodes-requesty.lmChatRequesty",
+      "typeVersion": 1,
+      "position": [120, 420]
+    },
+
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Here is a draft tagline from another model:\n\n\"{{ $json.text }}\"\n\nCritique it in 2-3 bullet points, then produce one improved version. Keep your whole reply under 80 words.",
+        "options": {
+          "systemMessage": "You are a sharp marketing editor. You refine other people's drafts."
+        }
+      },
+      "id": "dddddddd-0004-0004-0004-000000000004",
+      "name": "2) Refine (Gemini 3.5 Flash)",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [560, 200]
+    },
+    {
+      "parameters": { "model": "vertex/gemini-3.5-flash", "options": {} },
+      "id": "eeeeeeee-0005-0005-0005-000000000005",
+      "name": "Requesty (Gemini 3.5 Flash)",
+      "type": "@requestyai/n8n-nodes-requesty.lmChatRequesty",
+      "typeVersion": 1,
+      "position": [560, 420]
+    },
+
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Two earlier models worked on a product tagline. Here is the latest critique-and-rewrite:\n\n{{ $json.text }}\n\nMake the final call: choose or write the single best tagline, then explain in one sentence why it wins. Format your reply as:\n\nFINAL: <tagline>\nWHY: <one sentence>",
+        "options": {
+          "systemMessage": "You are the senior creative director. You make the final decision and stand behind it."
+        }
+      },
+      "id": "ffffffff-0006-0006-0006-000000000006",
+      "name": "3) Finalize (Claude Opus 4.7)",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [1000, 200]
+    },
+    {
+      "parameters": { "model": "anthropic/claude-opus-4-7", "options": {} },
+      "id": "11110007-0007-0007-0007-000000000007",
+      "name": "Requesty (Claude Opus 4.7)",
+      "type": "@requestyai/n8n-nodes-requesty.lmChatRequesty",
+      "typeVersion": 1,
+      "position": [1000, 420]
+    }
+  ],
+
+  "connections": {
+    "When clicking Test workflow": {
+      "main": [[{ "node": "1) Draft (GPT-5.4)", "type": "main", "index": 0 }]]
+    },
+
+    "1) Draft (GPT-5.4)": {
+      "main": [[{ "node": "2) Refine (Gemini 3.5 Flash)", "type": "main", "index": 0 }]]
+    },
+    "2) Refine (Gemini 3.5 Flash)": {
+      "main": [[{ "node": "3) Finalize (Claude Opus 4.7)", "type": "main", "index": 0 }]]
+    },
+
+    "Requesty (GPT-5.4)": {
+      "ai_languageModel": [[{ "node": "1) Draft (GPT-5.4)", "type": "ai_languageModel", "index": 0 }]]
+    },
+    "Requesty (Gemini 3.5 Flash)": {
+      "ai_languageModel": [[{ "node": "2) Refine (Gemini 3.5 Flash)", "type": "ai_languageModel", "index": 0 }]]
+    },
+    "Requesty (Claude Opus 4.7)": {
+      "ai_languageModel": [[{ "node": "3) Finalize (Claude Opus 4.7)", "type": "ai_languageModel", "index": 0 }]]
+    }
+  },
+
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "pinData": {},
+  "meta": { "templateId": "requesty-multi-model-chain" }
+}
