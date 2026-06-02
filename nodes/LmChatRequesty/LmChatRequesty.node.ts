@@ -9,8 +9,6 @@ type ModelOptions = {
 	topP?: number;
 	frequencyPenalty?: number;
 	presencePenalty?: number;
-	responseFormat?: 'text' | 'json_object' | 'json_schema';
-	jsonSchema?: string;
 	reasoningEffort?: '' | 'low' | 'medium' | 'high';
 	enableWebSearch?: boolean;
 	webSearchContextSize?: 'low' | 'medium' | 'high';
@@ -89,6 +87,39 @@ export class LmChatRequesty implements INodeType {
 				default: '',
 			},
 			{
+				displayName: 'Response Format',
+				name: 'responseFormat',
+				type: 'options',
+				default: 'text',
+				description:
+					'Force the model to return a specific format. JSON Schema enforces a strict schema (real structured output).',
+				options: [
+					{ name: 'Text', value: 'text', description: 'Plain text response (default)' },
+					{
+						name: 'JSON Object',
+						value: 'json_object',
+						description: 'Force a syntactically valid JSON object',
+					},
+					{
+						name: 'JSON Schema',
+						value: 'json_schema',
+						description:
+							'Force the response to strictly match the JSON Schema you provide (structured output)',
+					},
+				],
+			},
+			{
+				displayName: 'JSON Schema',
+				name: 'jsonSchema',
+				type: 'json',
+				default:
+					'{\n  "name": "response",\n  "strict": true,\n  "schema": {\n    "type": "object",\n    "properties": {\n      "answer": { "type": "string" }\n    },\n    "required": ["answer"],\n    "additionalProperties": false\n  }\n}',
+				description:
+					'The JSON Schema the response must match. Accepts a bare JSON Schema or a { name, strict, schema } wrapper.',
+				typeOptions: { rows: 10 },
+				displayOptions: { show: { responseFormat: ['json_schema'] } },
+			},
+			{
 				displayName: 'Options',
 				name: 'options',
 				placeholder: 'Add Option',
@@ -121,17 +152,6 @@ export class LmChatRequesty implements INodeType {
 						description:
 							'Penalizes new tokens based on their existing frequency in the text so far, decreasing the likelihood of repetition',
 						type: 'number',
-					},
-					{
-						displayName: 'JSON Schema',
-						name: 'jsonSchema',
-						type: 'json',
-						default:
-							'{\n  "name": "response",\n  "strict": true,\n  "schema": {\n    "type": "object",\n    "properties": {\n      "answer": { "type": "string" }\n    },\n    "required": ["answer"],\n    "additionalProperties": false\n  }\n}',
-						description:
-							'The JSON Schema the response must match. Used only when Response Format is "JSON Schema".',
-						typeOptions: { rows: 8 },
-						displayOptions: { show: { responseFormat: ['json_schema'] } },
 					},
 					{
 						displayName: 'Maximum Tokens',
@@ -178,28 +198,6 @@ export class LmChatRequesty implements INodeType {
 						],
 					},
 					{
-						displayName: 'Response Format',
-						name: 'responseFormat',
-						type: 'options',
-						default: 'text',
-						description:
-							'Force the model to return a specific format. JSON Schema enforces a strict schema (real structured output) and requires the JSON Schema field below.',
-						options: [
-							{ name: 'Text', value: 'text', description: 'Plain text response (default)' },
-							{
-								name: 'JSON Object',
-								value: 'json_object',
-								description: 'Force a syntactically valid JSON object',
-							},
-							{
-								name: 'JSON Schema',
-								value: 'json_schema',
-								description:
-									'Force the response to strictly match the JSON Schema you provide (structured output)',
-							},
-						],
-					},
-					{
 						displayName: 'Sampling Temperature',
 						name: 'temperature',
 						default: 0.7,
@@ -222,13 +220,13 @@ export class LmChatRequesty implements INodeType {
 						name: 'webSearchContextSize',
 						type: 'options',
 						default: 'medium',
-						description: 'How much context the web search tool retrieves per query',
+						description:
+							'How much context the web search tool retrieves per query. Only used when Enable Web Search is on.',
 						options: [
 							{ name: 'Low', value: 'low' },
 							{ name: 'Medium', value: 'medium' },
 							{ name: 'High', value: 'high' },
 						],
-						displayOptions: { show: { enableWebSearch: [true] } },
 					},
 				],
 			},
@@ -240,6 +238,14 @@ export class LmChatRequesty implements INodeType {
 		const model = this.getNodeParameter('model', itemIndex) as string;
 		const options = this.getNodeParameter('options', itemIndex, {}) as ModelOptions;
 
+		// Response Format and JSON Schema are top-level parameters (not inside the
+		// Options collection) so their conditional display and editor render correctly.
+		const responseFormat = this.getNodeParameter('responseFormat', itemIndex, 'text') as
+			| 'text'
+			| 'json_object'
+			| 'json_schema';
+		const jsonSchemaRaw = this.getNodeParameter('jsonSchema', itemIndex, '') as string;
+
 		const baseUrl =
 			options.baseUrl || (credentials.baseUrl as string) || 'https://router.requesty.ai/v1';
 
@@ -247,14 +253,14 @@ export class LmChatRequesty implements INodeType {
 		// On the Responses API, structured output is expressed via `text.format`
 		// (not `response_format` like the Chat Completions API).
 		let additionalParams: Record<string, unknown> | undefined;
-		if (options.responseFormat === 'json_object') {
+		if (responseFormat === 'json_object') {
 			additionalParams = { text: { format: { type: 'json_object' } } };
-		} else if (options.responseFormat === 'json_schema') {
-			const rawSchema = options.jsonSchema;
+		} else if (responseFormat === 'json_schema') {
+			const rawSchema = jsonSchemaRaw;
 			if (rawSchema === undefined || rawSchema === null || rawSchema === '') {
 				throw new NodeOperationError(
 					this.getNode(),
-					'Response Format is set to "JSON Schema" but no JSON Schema was provided. Add a schema in the JSON Schema option.',
+					'Response Format is set to "JSON Schema" but no JSON Schema was provided. Add a schema in the JSON Schema field.',
 				);
 			}
 
