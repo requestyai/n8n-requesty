@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/requestyai/n8n-requesty.git"
+    "url": "git+https://github.com/requestyai/n8n-requesty.git"
   },
   "scripts": {
     "build": "n8n-node build",
