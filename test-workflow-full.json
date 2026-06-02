@@ -25,7 +25,7 @@
       "parameters": { "model": "openai/gpt-4o-mini", "options": {} },
       "id": "cccccccc-0003-0003-0003-000000000003",
       "name": "Requesty (chat)",
-      "type": "@requestyai/n8n-nodes-requesty.lmChatRequesty",
+      "type": "@requesty/n8n-nodes-requesty.lmChatRequesty",
       "typeVersion": 1,
       "position": [220, 380]
     },
@@ -48,7 +48,7 @@
       "parameters": { "model": "openai/gpt-4o-mini", "options": {} },
       "id": "eeeeeeee-0005-0005-0005-000000000005",
       "name": "Requesty (agent)",
-      "type": "@requestyai/n8n-nodes-requesty.lmChatRequesty",
+      "type": "@requesty/n8n-nodes-requesty.lmChatRequesty",
       "typeVersion": 1,
       "position": [560, 400]
     },
@@ -82,7 +82,7 @@
       },
       "id": "11110008-0008-0008-0008-000000000008",
       "name": "Requesty (structured)",
-      "type": "@requestyai/n8n-nodes-requesty.lmChatRequesty",
+      "type": "@requesty/n8n-nodes-requesty.lmChatRequesty",
       "typeVersion": 1,
       "position": [1000, 400]
     }

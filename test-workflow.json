@@ -37,7 +37,7 @@
       },
       "id": "33333333-3333-3333-3333-333333333333",
       "name": "Requesty Chat Model",
-      "type": "@requestyai/n8n-nodes-requesty.lmChatRequesty",
+      "type": "@requesty/n8n-nodes-requesty.lmChatRequesty",
       "typeVersion": 1,
       "position": [
         520,
