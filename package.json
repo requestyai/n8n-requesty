@@ -48,7 +48,7 @@
     "typescript": "5.9.2"
   },
   "peerDependencies": {
-    "@n8n/ai-node-sdk": "*",
+    "ai-node-sdk": "*",
     "n8n-workflow": "*"
   }
 }
