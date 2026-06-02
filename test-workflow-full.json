@@ -1,0 +1,131 @@
+{
+  "name": "Requesty — Full Test (Chat · Tool · Structured)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "aaaaaaaa-0001-0001-0001-000000000001",
+      "name": "When clicking Test workflow",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-100, 480]
+    },
+
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "In one short sentence, say hello and tell me which model you are."
+      },
+      "id": "bbbbbbbb-0002-0002-0002-000000000002",
+      "name": "1) Basic Chat",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [220, 180]
+    },
+    {
+      "parameters": { "model": "openai/gpt-4o-mini", "options": {} },
+      "id": "cccccccc-0003-0003-0003-000000000003",
+      "name": "Requesty (chat)",
+      "type": "@requestyai/n8n-nodes-requesty.lmChatRequesty",
+      "typeVersion": 1,
+      "position": [220, 380]
+    },
+
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "What is 1843 multiplied by 27, then minus 500? Use the Calculator tool and show the final number.",
+        "options": {
+          "systemMessage": "You are a helpful assistant. Always use the Calculator tool for any arithmetic."
+        }
+      },
+      "id": "dddddddd-0004-0004-0004-000000000004",
+      "name": "2) Tool Calling (Agent)",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [640, 180]
+    },
+    {
+      "parameters": { "model": "openai/gpt-4o-mini", "options": {} },
+      "id": "eeeeeeee-0005-0005-0005-000000000005",
+      "name": "Requesty (agent)",
+      "type": "@requestyai/n8n-nodes-requesty.lmChatRequesty",
+      "typeVersion": 1,
+      "position": [560, 400]
+    },
+    {
+      "parameters": {},
+      "id": "ffffffff-0006-0006-0006-000000000006",
+      "name": "Calculator",
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [760, 400]
+    },
+
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Extract the details from this text: 'Acme Corp, founded in 1998 in Berlin, makes industrial robots and had revenue of 42 million euros last year.'",
+        "hasOutputParser": true
+      },
+      "id": "11110007-0007-0007-0007-000000000007",
+      "name": "3) Structured Output",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [1080, 180]
+    },
+    {
+      "parameters": { "model": "openai/gpt-4o-mini", "options": {} },
+      "id": "11110008-0008-0008-0008-000000000008",
+      "name": "Requesty (structured)",
+      "type": "@requestyai/n8n-nodes-requesty.lmChatRequesty",
+      "typeVersion": 1,
+      "position": [1000, 400]
+    },
+    {
+      "parameters": {
+        "schemaType": "fromJson",
+        "jsonSchemaExample": "{\n  \"company\": \"Acme Corp\",\n  \"foundedYear\": 1998,\n  \"city\": \"Berlin\",\n  \"product\": \"industrial robots\",\n  \"revenueMillionsEur\": 42\n}"
+      },
+      "id": "11110009-0009-0009-0009-000000000009",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [1200, 400]
+    }
+  ],
+
+  "connections": {
+    "When clicking Test workflow": {
+      "main": [
+        [
+          { "node": "1) Basic Chat", "type": "main", "index": 0 },
+          { "node": "2) Tool Calling (Agent)", "type": "main", "index": 0 },
+          { "node": "3) Structured Output", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+
+    "Requesty (chat)": {
+      "ai_languageModel": [[{ "node": "1) Basic Chat", "type": "ai_languageModel", "index": 0 }]]
+    },
+
+    "Requesty (agent)": {
+      "ai_languageModel": [[{ "node": "2) Tool Calling (Agent)", "type": "ai_languageModel", "index": 0 }]]
+    },
+    "Calculator": {
+      "ai_tool": [[{ "node": "2) Tool Calling (Agent)", "type": "ai_tool", "index": 0 }]]
+    },
+
+    "Requesty (structured)": {
+      "ai_languageModel": [[{ "node": "3) Structured Output", "type": "ai_languageModel", "index": 0 }]]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [[{ "node": "3) Structured Output", "type": "ai_outputParser", "index": 0 }]]
+    }
+  },
+
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "pinData": {},
+  "meta": { "templateId": "requesty-full-test" }
+}
