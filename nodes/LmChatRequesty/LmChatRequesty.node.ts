@@ -14,7 +14,6 @@ type ModelOptions = {
 	reasoningEffort?: 'low' | 'medium' | 'high';
 	enableWebSearch?: boolean;
 	webSearchContextSize?: 'low' | 'medium' | 'high';
-	webSearchCountry?: string;
 };
 
 export class LmChatRequesty implements INodeType {
@@ -225,16 +224,6 @@ export class LmChatRequesty implements INodeType {
 						],
 						displayOptions: { show: { enableWebSearch: [true] } },
 					},
-					{
-						displayName: 'Web Search Country',
-						name: 'webSearchCountry',
-						type: 'string',
-						default: '',
-						placeholder: 'e.g. US',
-						description:
-							'Optional ISO country code to bias web search results to an approximate location',
-						displayOptions: { show: { enableWebSearch: [true] } },
-					},
 				],
 			},
 		],
@@ -281,16 +270,15 @@ export class LmChatRequesty implements INodeType {
 			};
 		}
 
-		// Build native web search provider tool.
+		// Build the native web search provider tool. Kept minimal so it works
+		// uniformly across the different providers behind the Requesty gateway.
 		const providerTools: ProviderTool[] = [];
 		if (options.enableWebSearch) {
-			const args: Record<string, unknown> = {
-				search_context_size: options.webSearchContextSize ?? 'medium',
-			};
-			if (options.webSearchCountry) {
-				args.user_location = { type: 'approximate', country: options.webSearchCountry };
-			}
-			providerTools.push({ type: 'provider', name: 'web_search', args });
+			providerTools.push({
+				type: 'provider',
+				name: 'web_search',
+				args: { search_context_size: options.webSearchContextSize ?? 'medium' },
+			});
 		}
 
 		return supplyModel(this, {
