@@ -222,28 +222,38 @@ export class LmChatRequesty implements INodeType {
 		const model = this.getNodeParameter('model', itemIndex) as string;
 		const options = this.getNodeParameter('options', itemIndex, {}) as ModelOptions;
 
-		// Build response_format for real structured output / JSON mode.
+		// Build the Responses API `text.format` for structured output.
+		// On the Responses API, structured output is expressed via `text.format`
+		// (not `response_format` like the Chat Completions API).
 		let additionalParams: Record<string, unknown> | undefined;
-		let supportsStrictToolCalling: boolean | undefined;
 		if (options.responseFormat === 'json_object') {
-			additionalParams = { response_format: { type: 'json_object' } };
+			additionalParams = { text: { format: { type: 'json_object' } } };
 		} else if (options.responseFormat === 'json_schema') {
-			let jsonSchema: unknown;
+			let parsedSchema: Record<string, unknown>;
 			try {
-				jsonSchema =
+				parsedSchema =
 					typeof options.jsonSchema === 'string'
-						? JSON.parse(options.jsonSchema)
-						: options.jsonSchema;
+						? (JSON.parse(options.jsonSchema) as Record<string, unknown>)
+						: (options.jsonSchema as unknown as Record<string, unknown>);
 			} catch {
 				throw new NodeOperationError(
 					this.getNode(),
 					'The JSON Schema provided in the Response Format options is not valid JSON',
 				);
 			}
+
+			// Accept either a bare schema or a full { name, strict, schema } wrapper.
+			const hasWrapper = 'schema' in parsedSchema;
 			additionalParams = {
-				response_format: { type: 'json_schema', json_schema: jsonSchema },
+				text: {
+					format: {
+						type: 'json_schema',
+						name: hasWrapper ? ((parsedSchema.name as string) ?? 'response') : 'response',
+						strict: hasWrapper ? (parsedSchema.strict as boolean) ?? true : true,
+						schema: hasWrapper ? parsedSchema.schema : parsedSchema,
+					},
+				},
 			};
-			supportsStrictToolCalling = true;
 		}
 
 		// Build native web search provider tool.
@@ -269,7 +279,6 @@ export class LmChatRequesty implements INodeType {
 			frequencyPenalty: options.frequencyPenalty,
 			presencePenalty: options.presencePenalty,
 			useResponsesApi: options.useResponsesApi,
-			supportsStrictToolCalling,
 			additionalParams,
 			providerTools: providerTools.length ? providerTools : undefined,
 		});
