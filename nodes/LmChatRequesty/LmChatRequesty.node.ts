@@ -110,7 +110,7 @@ export class LmChatRequesty implements INodeType {
 						type: 'boolean',
 						default: false,
 						description:
-							'Whether to give the model a native web search tool so it can look up current information. Works best with the Responses API enabled.',
+							'Whether to give the model a native web search tool so it can look up current information',
 					},
 					{
 						displayName: 'Frequency Penalty',
