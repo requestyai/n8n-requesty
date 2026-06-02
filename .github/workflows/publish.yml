@@ -1,0 +1,72 @@
+# Publishes this n8n community node package to npm on every version tag push.
+#
+# Starting May 1 2026, n8n requires all community nodes to be published via
+# GitHub Actions with npm provenance statements. This workflow satisfies that
+# requirement. Provenance lets anyone cryptographically verify that a package
+# was built by this exact workflow, from this exact repository and commit.
+#
+# ─── ONE-TIME SETUP ────────────────────────────────────────────────────────────
+#
+# Option A — OIDC Trusted Publishing (recommended, no long-lived secrets):
+# 1. Log in to npmjs.com and open your package's settings.
+# 2. Under "Publish access" → "Trusted Publishers", click "Add a publisher".
+# 3. Select GitHub Actions and fill in:
+#      Repository owner: requestyai
+#      Repository name:  n8n-requesty
+#      Workflow name:    publish.yml
+#      Environment:      (leave blank unless you use GitHub Environments)
+# 4. Leave the NPM_TOKEN secret unset in this repository. GitHub's OIDC
+#    token is used instead — no secret ever touches your repo settings.
+#
+# Option B — npm Automation Token (fallback):
+# 1. On npmjs.com: Access Tokens → Generate New Token → Granular Access Token.
+#    Scope it to this package with "Read and write" publish permission.
+# 2. In GitHub: Settings → Secrets and variables → Actions → New secret.
+#    Name it NPM_TOKEN and paste the token value.
+#
+# Both options work with --provenance. Provenance is signed by GitHub's OIDC
+# infrastructure regardless of how npm authentication is handled.
+#
+# ─── RELEASE PROCESS ───────────────────────────────────────────────────────────
+#
+# Run the following command locally to start an interactive release:
+#
+#   npm run release
+#
+# This will lint, build, prompt for a version bump, update the changelog,
+# commit, tag, and push — which triggers this workflow to publish to npm.
+
+name: Publish
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Release
+        run: |
+          [ -n "$NPM_TOKEN" ] && npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
+          npm run release
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
