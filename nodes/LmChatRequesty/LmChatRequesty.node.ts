@@ -10,7 +10,6 @@ type ModelOptions = {
 	presencePenalty?: number;
 	responseFormat?: 'text' | 'json_object' | 'json_schema';
 	jsonSchema?: string;
-	useResponsesApi?: boolean;
 	enableWebSearch?: boolean;
 	webSearchContextSize?: 'low' | 'medium' | 'high';
 	webSearchCountry?: string;
@@ -182,14 +181,6 @@ export class LmChatRequesty implements INodeType {
 						type: 'number',
 					},
 					{
-						displayName: 'Use Responses API',
-						name: 'useResponsesApi',
-						type: 'boolean',
-						default: false,
-						description:
-							'Whether to use the OpenAI Responses API instead of Chat Completions. Required for native web search and some advanced features.',
-					},
-					{
 						displayName: 'Web Search Context Size',
 						name: 'webSearchContextSize',
 						type: 'options',
@@ -278,7 +269,9 @@ export class LmChatRequesty implements INodeType {
 			topP: options.topP,
 			frequencyPenalty: options.frequencyPenalty,
 			presencePenalty: options.presencePenalty,
-			useResponsesApi: options.useResponsesApi,
+			// The Requesty node always uses the Responses API, which unlocks
+			// structured output via text.format and native built-in tools.
+			useResponsesApi: true,
 			additionalParams,
 			providerTools: providerTools.length ? providerTools : undefined,
 		});
