@@ -11,7 +11,7 @@ type ModelOptions = {
 	presencePenalty?: number;
 	responseFormat?: 'text' | 'json_object' | 'json_schema';
 	jsonSchema?: string;
-	reasoningEffort?: 'low' | 'medium' | 'high';
+	reasoningEffort?: '' | 'low' | 'medium' | 'high';
 	enableWebSearch?: boolean;
 	webSearchContextSize?: 'low' | 'medium' | 'high';
 };
@@ -154,10 +154,15 @@ export class LmChatRequesty implements INodeType {
 						displayName: 'Reasoning Effort',
 						name: 'reasoningEffort',
 						type: 'options',
-						default: 'medium',
+						default: '',
 						description:
-							'Controls how much reasoning a reasoning-capable model does before answering. Has no effect on models that do not support reasoning.',
+							'Controls how much reasoning a reasoning-capable model does before answering. Leave as Default to omit it; has no effect on models that do not support reasoning.',
 						options: [
+							{
+								name: 'Default',
+								value: '',
+								description: 'Do not send a reasoning effort (let the model decide)',
+							},
 							{
 								name: 'Low',
 								value: 'low',
