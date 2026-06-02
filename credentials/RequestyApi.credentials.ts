@@ -24,14 +24,21 @@ export class RequestyApi implements ICredentialType {
 			typeOptions: { password: true },
 			required: true,
 			default: '',
+			description: 'Your Requesty API key. Find it at app.requesty.ai/getting-started',
+		},
+		{
+			displayName: 'Base URL',
+			name: 'baseUrl',
+			type: 'string',
+			default: 'https://router.requesty.ai/v1',
 			description:
-				'Your Requesty API key. Find it at app.requesty.ai/getting-started',
+				'The Requesty gateway URL. Change this only if you use a self-hosted Requesty deployment.',
 		},
 	];
 
 	test: ICredentialTestRequest = {
 		request: {
-			baseURL: 'https://router.requesty.ai/v1',
+			baseURL: '={{ $credentials.baseUrl || "https://router.requesty.ai/v1" }}',
 			url: '/models',
 		},
 	};
