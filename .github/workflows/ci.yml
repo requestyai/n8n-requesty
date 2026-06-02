@@ -10,8 +10,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint-and-build:
-    name: Lint & Build
+  lint-build-test:
+    name: Lint, Build & Test
     runs-on: ubuntu-latest
 
     steps:
@@ -21,12 +21,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: npm ci --legacy-peer-deps
 
       - name: Lint
         run: npm run lint
 
       - name: Build
         run: npm run build
+
+      - name: Test
+        run: npm test
