@@ -23,24 +23,27 @@ type SuppliedModel = {
 };
 
 /**
- * Builds a minimal ISupplyDataFunctions-like context whose getNodeParameter
- * returns the given model id and options object.
+ * Builds a minimal ISupplyDataFunctions-like context. `params` may contain the
+ * Options-collection keys plus the top-level params responseFormat / jsonSchema.
  */
-function makeContext(modelId: string, options: Record<string, unknown>) {
+function makeContext(modelId: string, params: Record<string, unknown>) {
+	const { responseFormat, jsonSchema, ...options } = params;
 	return {
 		getCredentials: async () => ({ apiKey: 'test-key' }),
 		getNode: () => ({ name: 'Requesty Chat Model' }),
-		getNodeParameter: (name: string) => {
+		getNodeParameter: (name: string, _i?: number, fallback?: unknown) => {
 			if (name === 'model') return modelId;
 			if (name === 'options') return options;
-			return undefined;
+			if (name === 'responseFormat') return responseFormat ?? fallback;
+			if (name === 'jsonSchema') return jsonSchema ?? fallback;
+			return fallback;
 		},
 	};
 }
 
-async function supply(modelId: string, options: Record<string, unknown>): Promise<SuppliedModel> {
+async function supply(modelId: string, params: Record<string, unknown>): Promise<SuppliedModel> {
 	const node = new LmChatRequesty();
-	const ctx = makeContext(modelId, options);
+	const ctx = makeContext(modelId, params);
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	await node.supplyData.call(ctx as any, 0);
 	const calls = supplyModel.mock.calls;
