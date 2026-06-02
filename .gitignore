@@ -4,3 +4,8 @@ pnpm-lock.yaml
 *.tsbuildinfo
 
 .DS_Store
+
+# Local dev scratch workflows (may contain API keys / localhost URLs — never commit)
+test-workflow-local.json
+test-workflow-matrix.json
+test-workflow-multimodel.json
