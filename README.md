@@ -32,19 +32,26 @@ Once your API key is saved, the **Model** dropdown auto-populates with all avail
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| Temperature | 0.7 | Controls randomness (0 = deterministic, 2 = very random) |
-| Maximum Tokens | -1 | Max tokens to generate (-1 for no limit) |
-| Top P | 1 | Nucleus sampling probability mass |
+| Base URL | _(gateway)_ | Override the gateway URL for self-hosted Requesty deployments |
+| Enable Web Search | off | Give the model a native web search tool for up-to-date information |
+| Web Search Context Size | medium | How much context the web search retrieves per query |
 | Frequency Penalty | 0 | Penalizes token repetition (-2 to 2) |
+| Maximum Tokens | -1 | Max tokens to generate (-1 for no limit) |
 | Presence Penalty | 0 | Penalizes already-seen tokens (-2 to 2) |
+| Reasoning Effort | medium | Low/medium/high reasoning for reasoning-capable models |
+| Response Format | Text | Text, JSON Object, or JSON Schema (strict structured output) |
+| Sampling Temperature | 0.7 | Controls randomness (0 = deterministic, 2 = very random) |
+| Top P | 1 | Nucleus sampling probability mass |
 
 ### Key Features
 
 - **300+ Models**: Access models from OpenAI, Anthropic, Google, Meta, Mistral, Cohere, and more
+- **Responses API**: Built on the Responses API, unlocking richer capabilities than plain chat completions
+- **Structured Output**: Enforce a strict JSON Schema server-side (real structured output, not prompt-engineered)
+- **Native Web Search**: Let the model search the web for current information
+- **Reasoning Control**: Tune reasoning effort for reasoning-capable models
 - **Intelligent Routing**: Automatic fallbacks and load balancing across providers
-- **Cost Optimization**: Track spending and optimize model selection
-- **OpenAI-Compatible**: Drop-in replacement for any OpenAI-compatible integration
-- **Zero Data Retention**: Optional ZDR-compliant model filtering
+- **Self-Hosted Friendly**: Point the node at your own Requesty deployment via the Base URL option
 
 ## Resources
 
