@@ -36,6 +36,7 @@ Once your API key is saved, the **Model** dropdown auto populates with all avail
 | JSON Schema | (example) | The schema the response must match when Response Format is JSON Schema |
 | Reasoning Effort | Default | Reasoning level (low, medium, high) for reasoning capable models |
 | Base URL | (gateway) | Override the gateway URL for self hosted Requesty deployments |
+| Custom Headers | (none) | Extra HTTP headers sent with every request, e.g. `X-Requesty-Agent` to tag and track a workflow |
 | Enable Web Search | off | Give the model a native web search tool for up to date information |
 | Web Search Context Size | medium | How much context the web search retrieves per query |
 | Sampling Temperature | 0.7 | Controls randomness (0 is deterministic, 2 is very random) |
@@ -44,6 +45,18 @@ Once your API key is saved, the **Model** dropdown auto populates with all avail
 | Frequency Penalty | 0 | Penalizes token repetition |
 | Presence Penalty | 0 | Penalizes already seen tokens |
 
+### Custom Headers
+
+Every request to Requesty is tagged with `HTTP-Referer` and `X-Title` headers so traffic is attributed to this n8n community node. You can add your own headers under **Options → Custom Headers** to tag and track individual workflows — for example:
+
+| Header | Example value |
+|--------|---------------|
+| `X-Requesty-Agent` | `my-support-bot` |
+| `X-Requesty-Environment` | `production` |
+| `X-Requesty-Team` | `platform` |
+
+These show up in your Requesty dashboard so you can break down usage by agent, environment, or team. Setting `HTTP-Referer` or `X-Title` as a custom header overrides the node defaults.
+
 ### Key Features
 
 - **300+ Models**: Access models from OpenAI, Anthropic, Google, Meta, Mistral, Cohere, and more
@@ -51,6 +64,7 @@ Once your API key is saved, the **Model** dropdown auto populates with all avail
 - **Structured Output**: Enforce a strict JSON Schema server side (real structured output, not prompt engineered)
 - **Native Web Search**: Let the model search the web for current information
 - **Reasoning Control**: Tune reasoning effort for reasoning capable models
+- **Custom Headers**: Tag and track workflows with `X-Requesty-Agent`, `X-Requesty-Environment`, `X-Requesty-Team`, and more
 - **Intelligent Routing**: Automatic fallbacks and load balancing across providers
 - **Self Hosted Friendly**: Point the node at your own Requesty deployment via the Base URL option
 
