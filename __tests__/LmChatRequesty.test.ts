@@ -32,6 +32,7 @@ function makeContext(modelId: string, params: Record<string, unknown>) {
 	return {
 		getCredentials: async () => ({ apiKey: 'test-key' }),
 		getNode: () => ({ name: 'Requesty Chat Model' }),
+		getExecutionId: () => 'exec-test-123',
 		getNodeParameter: (name: string, _i?: number, fallback?: unknown) => {
 			if (name === 'model') return modelId;
 			if (name === 'options') return options;
@@ -165,13 +166,22 @@ describe('LmChatRequesty', () => {
 			});
 		});
 
-		it('sends no structured output for plain text', async () => {			const model = await supply('openai-responses/gpt-5.4', { responseFormat: 'text' });
-			expect(model.additionalParams).toBeUndefined();
+		it('still sends the requesty trace_id for plain text', async () => {
+			const model = await supply('openai-responses/gpt-5.4', { responseFormat: 'text' });
+			expect(model.additionalParams).toEqual({ requesty: { trace_id: 'exec-test-123' } });
+		});
+
+		it('sends the n8n execution id as requesty.trace_id', async () => {
+			const model = await supply('openai-responses/gpt-5.4', {});
+			expect(model.additionalParams).toEqual({ requesty: { trace_id: 'exec-test-123' } });
 		});
 
 		it('builds text.format for JSON object mode', async () => {
 			const model = await supply('openai-responses/gpt-5.4', { responseFormat: 'json_object' });
-			expect(model.additionalParams).toEqual({ text: { format: { type: 'json_object' } } });
+			expect(model.additionalParams).toEqual({
+				text: { format: { type: 'json_object' } },
+				requesty: { trace_id: 'exec-test-123' },
+			});
 		});
 
 		it('builds strict text.format from a wrapped JSON schema', async () => {
@@ -193,6 +203,7 @@ describe('LmChatRequesty', () => {
 						schema: { type: 'object', properties: { x: { type: 'string' } } },
 					},
 				},
+				requesty: { trace_id: 'exec-test-123' },
 			});
 		});
 
@@ -211,6 +222,7 @@ describe('LmChatRequesty', () => {
 						schema: { type: 'object', properties: { x: { type: 'string' } } },
 					},
 				},
+				requesty: { trace_id: 'exec-test-123' },
 			});
 		});
 
