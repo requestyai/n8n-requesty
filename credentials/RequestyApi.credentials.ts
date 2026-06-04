@@ -49,6 +49,9 @@ export class RequestyApi implements ICredentialType {
 	): Promise<IHttpRequestOptions> {
 		requestOptions.headers ??= {};
 		requestOptions.headers['Authorization'] = `Bearer ${credentials.apiKey}`;
+		// Attribution headers identifying traffic from the n8n Requesty community node.
+		requestOptions.headers['HTTP-Referer'] = 'https://github.com/requestyai/n8n-requesty';
+		requestOptions.headers['X-Title'] = 'n8n Requesty Community Node';
 		return requestOptions;
 	}
 }
