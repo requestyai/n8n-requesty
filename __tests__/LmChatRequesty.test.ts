@@ -17,6 +17,7 @@ type SuppliedModel = {
 	apiKey: string;
 	model: string;
 	useResponsesApi: boolean;
+	defaultHeaders?: Record<string, string>;
 	reasoning?: { effort: string };
 	additionalParams?: Record<string, unknown>;
 	providerTools?: Array<Record<string, unknown>>;
@@ -113,8 +114,58 @@ describe('LmChatRequesty', () => {
 			]);
 		});
 
-		it('sends no structured output for plain text', async () => {
-			const model = await supply('openai-responses/gpt-5.4', { responseFormat: 'text' });
+		it('sends the default attribution headers', async () => {
+			const model = await supply('openai-responses/gpt-5.4', {});
+			expect(model.defaultHeaders).toEqual({
+				'HTTP-Referer': 'https://github.com/requestyai/n8n-requesty',
+				'X-Title': 'n8n Requesty Community Node',
+			});
+		});
+
+		it('merges custom headers with the attribution defaults', async () => {
+			const model = await supply('openai-responses/gpt-5.4', {
+				customHeaders: {
+					header: [
+						{ name: 'X-Requesty-Agent', value: 'my-support-bot' },
+						{ name: 'X-Requesty-Environment', value: 'production' },
+					],
+				},
+			});
+			expect(model.defaultHeaders).toEqual({
+				'HTTP-Referer': 'https://github.com/requestyai/n8n-requesty',
+				'X-Title': 'n8n Requesty Community Node',
+				'X-Requesty-Agent': 'my-support-bot',
+				'X-Requesty-Environment': 'production',
+			});
+		});
+
+		it('lets a custom header override a default (case-insensitively)', async () => {
+			const model = await supply('openai-responses/gpt-5.4', {
+				customHeaders: { header: [{ name: 'x-title', value: 'My Custom App' }] },
+			});
+			expect(model.defaultHeaders).toEqual({
+				'HTTP-Referer': 'https://github.com/requestyai/n8n-requesty',
+				'x-title': 'My Custom App',
+			});
+		});
+
+		it('skips custom headers with an empty name or value', async () => {
+			const model = await supply('openai-responses/gpt-5.4', {
+				customHeaders: {
+					header: [
+						{ name: '', value: 'ignored' },
+						{ name: 'X-Empty', value: '' },
+						{ name: '  ', value: 'whitespace-name' },
+					],
+				},
+			});
+			expect(model.defaultHeaders).toEqual({
+				'HTTP-Referer': 'https://github.com/requestyai/n8n-requesty',
+				'X-Title': 'n8n Requesty Community Node',
+			});
+		});
+
+		it('sends no structured output for plain text', async () => {			const model = await supply('openai-responses/gpt-5.4', { responseFormat: 'text' });
 			expect(model.additionalParams).toBeUndefined();
 		});
 

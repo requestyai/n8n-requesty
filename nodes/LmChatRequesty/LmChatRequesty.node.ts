@@ -2,6 +2,8 @@ import type { INodeType, INodeTypeDescription, ISupplyDataFunctions } from 'n8n-
 import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
 import { supplyModel, type ProviderTool } from '@n8n/ai-node-sdk';
 
+type CustomHeader = { name?: string; value?: string };
+
 type ModelOptions = {
 	baseUrl?: string;
 	temperature?: number;
@@ -12,7 +14,39 @@ type ModelOptions = {
 	reasoningEffort?: '' | 'low' | 'medium' | 'high';
 	enableWebSearch?: boolean;
 	webSearchContextSize?: 'low' | 'medium' | 'high';
+	customHeaders?: { header?: CustomHeader[] };
 };
+
+// Attribution headers identifying traffic as coming from the n8n Requesty
+// community node. Always sent; can be overridden by user-supplied custom headers.
+const ATTRIBUTION_HEADERS: Record<string, string> = {
+	'HTTP-Referer': 'https://github.com/requestyai/n8n-requesty',
+	'X-Title': 'n8n Requesty Community Node',
+};
+
+/**
+ * Merges the default attribution headers with any user-supplied custom headers.
+ * User headers take precedence on name collision (case-insensitively), so a user
+ * can override the defaults. Empty names/values are skipped.
+ */
+function buildHeaders(customHeaders?: { header?: CustomHeader[] }): Record<string, string> {
+	const headers: Record<string, string> = { ...ATTRIBUTION_HEADERS };
+
+	for (const entry of customHeaders?.header ?? []) {
+		const name = entry.name?.trim();
+		if (!name || entry.value === undefined || entry.value === '') continue;
+
+		// Drop any default whose name matches case-insensitively, then set the
+		// user's header with their exact casing.
+		const lower = name.toLowerCase();
+		for (const key of Object.keys(headers)) {
+			if (key.toLowerCase() === lower) delete headers[key];
+		}
+		headers[name] = entry.value;
+	}
+
+	return headers;
+}
 
 export class LmChatRequesty implements INodeType {
 	description: INodeTypeDescription = {
@@ -135,6 +169,40 @@ export class LmChatRequesty implements INodeType {
 						placeholder: 'https://router.requesty.ai/v1',
 						description:
 							'Override the gateway URL for this node. Leave empty to use the URL from the credential (which defaults to the public Requesty gateway).',
+					},
+					{
+						displayName: 'Custom Headers',
+						name: 'customHeaders',
+						type: 'fixedCollection',
+						typeOptions: { multipleValues: true },
+						default: {},
+						placeholder: 'Add Header',
+						description:
+							'Extra HTTP headers sent with every request to Requesty. Use Requesty attribution headers such as X-Requesty-Agent, X-Requesty-Environment or X-Requesty-Team to tag and track this workflow. Setting HTTP-Referer or X-Title here overrides the node defaults.',
+						options: [
+							{
+								name: 'header',
+								displayName: 'Header',
+								values: [
+									{
+										displayName: 'Name',
+										name: 'name',
+										type: 'string',
+										default: '',
+										placeholder: 'X-Requesty-Agent',
+										description: 'The header name, e.g. X-Requesty-Agent',
+									},
+									{
+										displayName: 'Value',
+										name: 'value',
+										type: 'string',
+										default: '',
+										placeholder: 'my-support-bot',
+										description: 'The header value',
+									},
+								],
+							},
+						],
 					},
 					{
 						displayName: 'Enable Web Search',
@@ -314,6 +382,7 @@ export class LmChatRequesty implements INodeType {
 			baseUrl,
 			apiKey: credentials.apiKey as string,
 			model,
+			defaultHeaders: buildHeaders(options.customHeaders),
 			temperature: options.temperature,
 			maxTokens: options.maxTokens,
 			topP: options.topP,
