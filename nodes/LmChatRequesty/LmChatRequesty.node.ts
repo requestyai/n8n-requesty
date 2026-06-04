@@ -128,7 +128,6 @@ export class LmChatRequesty implements INodeType {
 				description:
 					'Force the model to return a specific format. JSON Schema enforces a strict schema (real structured output).',
 				options: [
-					{ name: 'Text', value: 'text', description: 'Plain text response (default)' },
 					{
 						name: 'JSON Object',
 						value: 'json_object',
@@ -140,6 +139,7 @@ export class LmChatRequesty implements INodeType {
 						description:
 							'Force the response to strictly match the JSON Schema you provide (structured output)',
 					},
+					{ name: 'Text', value: 'text', description: 'Plain text response (default)' },
 				],
 			},
 			{
@@ -375,6 +375,18 @@ export class LmChatRequesty implements INodeType {
 				name: 'web_search',
 				args: { search_context_size: options.webSearchContextSize ?? 'medium' },
 			});
+		}
+
+		// Attach Requesty metadata to the request body. The n8n execution ID is
+		// sent as `requesty.trace_id` so each request correlates back to the exact
+		// workflow run in the Requesty dashboard. This rides along in
+		// additionalParams, which the Responses API spreads into the request body.
+		const executionId = this.getExecutionId();
+		if (executionId) {
+			additionalParams = {
+				...additionalParams,
+				requesty: { trace_id: executionId },
+			};
 		}
 
 		return supplyModel(this, {
