@@ -37,7 +37,8 @@
       "dist/credentials/RequestyApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/LmChatRequesty/LmChatRequesty.node.js"
+      "dist/nodes/LmChatRequesty/LmChatRequesty.node.js",
+      "dist/nodes/ImageGenRequesty/ImageGenRequesty.node.js"
     ]
   },
   "devDependencies": {
