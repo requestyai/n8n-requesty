@@ -3,13 +3,12 @@
   "nodes": [
     {
       "parameters": {},
-      "id": "aaaaaaaa-0001-0001-0001-000000000001",
+      "id": "f47ac10b-58cc-4372-a567-0e02b2c3d401",
       "name": "When clicking Test workflow",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [-100, 380]
     },
-
     {
       "parameters": {
         "model": "azure/openai/gpt-image-1",
@@ -19,13 +18,12 @@
           "quality": "low"
         }
       },
-      "id": "bbbbbbbb-0002-0002-0002-000000000002",
-      "name": "1) Generate Image (binary)",
+      "id": "f47ac10b-58cc-4372-a567-0e02b2c3d402",
+      "name": "Generate Image Binary",
       "type": "CUSTOM.imageGenRequesty",
       "typeVersion": 1,
-      "position": [220, 180]
+      "position": [220, 160]
     },
-
     {
       "parameters": {
         "model": "azure/openai/gpt-image-1",
@@ -36,13 +34,12 @@
           "quality": "low"
         }
       },
-      "id": "cccccccc-0003-0003-0003-000000000003",
-      "name": "2) Generate Image (URLs)",
+      "id": "f47ac10b-58cc-4372-a567-0e02b2c3d403",
+      "name": "Generate Image URLs",
       "type": "CUSTOM.imageGenRequesty",
       "typeVersion": 1,
       "position": [220, 380]
     },
-
     {
       "parameters": {
         "promptType": "define",
@@ -51,21 +48,21 @@
           "systemMessage": "You are a helpful assistant. Use the image generation tool whenever the user asks for an image."
         }
       },
-      "id": "dddddddd-0004-0004-0004-000000000004",
-      "name": "3) Agent with Image Tool",
+      "id": "f47ac10b-58cc-4372-a567-0e02b2c3d404",
+      "name": "Agent with Image Tool",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
-      "position": [640, 580]
+      "position": [260, 620]
     },
     {
       "parameters": {
         "model": "openai-responses/gpt-5.4"
       },
-      "id": "eeeeeeee-0005-0005-0005-000000000005",
-      "name": "Requesty (agent model)",
+      "id": "f47ac10b-58cc-4372-a567-0e02b2c3d405",
+      "name": "Requesty Agent Model",
       "type": "CUSTOM.lmChatRequesty",
       "typeVersion": 1,
-      "position": [560, 800]
+      "position": [180, 840]
     },
     {
       "parameters": {
@@ -76,35 +73,32 @@
           "quality": "low"
         }
       },
-      "id": "ffffffff-0006-0006-0006-000000000006",
-      "name": "Generate Image Tool",
+      "id": "f47ac10b-58cc-4372-a567-0e02b2c3d406",
+      "name": "Image Tool",
       "type": "CUSTOM.imageGenRequestyTool",
       "typeVersion": 1,
-      "position": [780, 800]
+      "position": [400, 840]
     }
   ],
-
   "connections": {
     "When clicking Test workflow": {
       "main": [
         [
-          { "node": "1) Generate Image (binary)", "type": "main", "index": 0 },
-          { "node": "2) Generate Image (URLs)", "type": "main", "index": 0 },
-          { "node": "3) Agent with Image Tool", "type": "main", "index": 0 }
+          { "node": "Generate Image Binary", "type": "main", "index": 0 },
+          { "node": "Generate Image URLs", "type": "main", "index": 0 },
+          { "node": "Agent with Image Tool", "type": "main", "index": 0 }
         ]
       ]
     },
-
-    "Requesty (agent model)": {
+    "Requesty Agent Model": {
       "ai_languageModel": [
-        [{ "node": "3) Agent with Image Tool", "type": "ai_languageModel", "index": 0 }]
+        [{ "node": "Agent with Image Tool", "type": "ai_languageModel", "index": 0 }]
       ]
     },
-    "Generate Image Tool": {
-      "ai_tool": [[{ "node": "3) Agent with Image Tool", "type": "ai_tool", "index": 0 }]]
+    "Image Tool": {
+      "ai_tool": [[{ "node": "Agent with Image Tool", "type": "ai_tool", "index": 0 }]]
     }
   },
-
   "active": false,
   "settings": { "executionOrder": "v1" },
   "pinData": {},
