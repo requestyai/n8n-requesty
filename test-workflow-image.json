@@ -1,0 +1,112 @@
+{
+  "name": "Requesty Image Generation Test — Direct · URLs · Agent Tool",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "aaaaaaaa-0001-0001-0001-000000000001",
+      "name": "When clicking Test workflow",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-100, 380]
+    },
+
+    {
+      "parameters": {
+        "model": "azure/openai/gpt-image-1",
+        "prompt": "A watercolor painting of a Japanese garden in autumn",
+        "options": {
+          "size": "1024x1024",
+          "quality": "low"
+        }
+      },
+      "id": "bbbbbbbb-0002-0002-0002-000000000002",
+      "name": "1) Generate Image (binary)",
+      "type": "CUSTOM.imageGenRequesty",
+      "typeVersion": 1,
+      "position": [220, 180]
+    },
+
+    {
+      "parameters": {
+        "model": "azure/openai/gpt-image-1",
+        "prompt": "A minimalist flat logo of a paper plane, transparent background",
+        "options": {
+          "returnImageUrls": true,
+          "background": "transparent",
+          "quality": "low"
+        }
+      },
+      "id": "cccccccc-0003-0003-0003-000000000003",
+      "name": "2) Generate Image (URLs)",
+      "type": "CUSTOM.imageGenRequesty",
+      "typeVersion": 1,
+      "position": [220, 380]
+    },
+
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Generate an image of a cute robot watering a plant, then tell me the URL of the generated image.",
+        "options": {
+          "systemMessage": "You are a helpful assistant. Use the image generation tool whenever the user asks for an image."
+        }
+      },
+      "id": "dddddddd-0004-0004-0004-000000000004",
+      "name": "3) Agent with Image Tool",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [640, 580]
+    },
+    {
+      "parameters": {
+        "model": "openai-responses/gpt-5.4"
+      },
+      "id": "eeeeeeee-0005-0005-0005-000000000005",
+      "name": "Requesty (agent model)",
+      "type": "CUSTOM.lmChatRequesty",
+      "typeVersion": 1,
+      "position": [560, 800]
+    },
+    {
+      "parameters": {
+        "model": "azure/openai/gpt-image-1",
+        "prompt": "={{ $fromAI('prompt', 'A text description of the image to generate') }}",
+        "options": {
+          "returnImageUrls": true,
+          "quality": "low"
+        }
+      },
+      "id": "ffffffff-0006-0006-0006-000000000006",
+      "name": "Generate Image Tool",
+      "type": "CUSTOM.imageGenRequestyTool",
+      "typeVersion": 1,
+      "position": [780, 800]
+    }
+  ],
+
+  "connections": {
+    "When clicking Test workflow": {
+      "main": [
+        [
+          { "node": "1) Generate Image (binary)", "type": "main", "index": 0 },
+          { "node": "2) Generate Image (URLs)", "type": "main", "index": 0 },
+          { "node": "3) Agent with Image Tool", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+
+    "Requesty (agent model)": {
+      "ai_languageModel": [
+        [{ "node": "3) Agent with Image Tool", "type": "ai_languageModel", "index": 0 }]
+      ]
+    },
+    "Generate Image Tool": {
+      "ai_tool": [[{ "node": "3) Agent with Image Tool", "type": "ai_tool", "index": 0 }]]
+    }
+  },
+
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "pinData": {},
+  "meta": { "templateId": "requesty-image-test" }
+}
