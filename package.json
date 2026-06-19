@@ -31,7 +31,6 @@
   },
   "n8n": {
     "n8nNodesApiVersion": 1,
-    "aiNodeSdkVersion": 1,
     "strict": true,
     "credentials": [
       "dist/credentials/RequestyApi.credentials.js"
@@ -53,7 +52,7 @@
     "typescript": "5.9.2"
   },
   "peerDependencies": {
-    "@n8n/ai-node-sdk": "*",
+    "@n8n/ai-node-sdk": ">=0.10.0",
     "n8n-workflow": "*"
   }
 }
