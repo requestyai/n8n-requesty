@@ -50,7 +50,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: npm ci --legacy-peer-deps
 
       - name: Lint
         # Non-blocking: n8n's eslint-plugin-community-nodes valid-peer-dependencies
