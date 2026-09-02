@@ -9,4 +9,3 @@ pnpm-lock.yaml
 test-workflow-local.json
 test-workflow-matrix.json
 test-workflow-multimodel.json
-package-lock.json
